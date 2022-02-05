@@ -129,7 +129,8 @@ else:
                  hover_data={'Candidats':False, 'Parrainage':True},
                  labels=None,
                 )
-    fig.update_yaxes(dtick=1)
+    if df_departement['Parrainage'].max()<=10:
+        fig.update_yaxes(dtick=1)
     st.write(fig)
 
 st.write('---')
