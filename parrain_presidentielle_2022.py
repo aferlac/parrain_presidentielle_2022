@@ -2,6 +2,7 @@
 # coding: utf-8
 
 import pandas as pd
+import numpy as np
 import folium
 import plotly.express as px
 import plotly.graph_objects as go
@@ -46,6 +47,10 @@ df_occurence = pd.DataFrame({
 df_occurence['Limite']=500
 
 liste_candidats = df['Candidat'].unique()
+liste_candidats.sort()
+
+liste_depart= df_occurence['Département'].unique()
+liste_depart.sort()
 
 st.set_page_config(page_title=' Parrainages - Présidentielle 2022 ', page_icon=None, layout='centered', initial_sidebar_state='auto')
 st.title('Parrainages - Présidentielle 2022')
@@ -54,7 +59,8 @@ Choix_graphe = st.radio(label='Choisissez un graphe',
                         options=['Nombre de parrainages validés',
                                  'Origine géographique des parrainages',
                                  'Evolution des parrainages',
-                                 'Par département'])
+                                 'Par département',
+                                 'Par candidat'])
 
 if Choix_graphe=='Nombre de parrainages validés':
     # Graphe du nombre de parrainage par candidat
@@ -115,7 +121,7 @@ elif Choix_graphe=='Evolution des parrainages':
     fig.add_trace(trace=go.Scatter(x=df_occurence['Candidats'], y=df_occurence['Limite'],  mode='lines',showlegend=False,hoverinfo='none'))
     st.write(fig)
 
-else:
+elif Choix_graphe=='Par département':
     # Graphe des parrainages par département
     depart=st.selectbox(label='Sélectionnez un département (menu déroulant ou saisir le nom)',options=df_occurence['Département'].unique())
     df_departement=df_occurence[(df_occurence['Département']==depart) & (df_occurence['Date']==df_occurence['Date'].max())].sort_values(by='Parrainage',ascending=False)
@@ -131,6 +137,45 @@ else:
                 )
     if df_departement['Parrainage'].max()<=10:
         fig.update_yaxes(dtick=1)
+    st.write(fig)
+
+else:
+    # Graphe des parrainages par candidat
+    candidat= st.selectbox(label='Sélectionnez un candidat (menu déroulant ou saisir le nom)',options=liste_candidats)
+    df_candidat=df_occurence[(df_occurence['Candidats']==candidat) & (df_occurence['Date']==df_occurence['Date'].max())].sort_values(by='Département',ascending=True)
+    df_candidat.drop(columns='Limite',inplace=True)
+    df_candidat = df_candidat.set_index(np.arange(len(df_candidat))) 
+    df_candidat['angle']=360/len(df_candidat)*df_candidat.index
+    df_candidat['base']=10
+    fig=px.bar_polar(data_frame=df_candidat,
+                r=df_candidat['Parrainage'],
+                theta=df_candidat['angle'],
+                hover_data={'Date':False, 'Candidats':False, 'Département':True, 'Parrainage':True, 'angle':False, 'base':False},
+                base=df_candidat['base'],
+                barmode='relative',
+                direction='clockwise',
+                start_angle=90,
+                title='Parrainages de '+candidat+' par département',
+                width=800,
+                height=600,
+                )
+    fig.update_layout(
+        template=None,
+        polar = dict(
+            radialaxis = dict(range=[0, df_candidat['Parrainage'].max()+12],
+                            showticklabels=False,
+                            ticks='',
+                            gridwidth=0,
+                            gridcolor='white',
+                            ),
+            angularaxis = dict(showticklabels=False,
+                            ticks='',
+                            gridwidth=0,
+                            gridcolor='white',
+                            ),
+        ),
+    )
+    st.write(str(df_parrain[df_parrain['candidat']==candidat]['nombre parrainage'].tolist()[0])+' parrainages')
     st.write(fig)
 
 st.write('---')
