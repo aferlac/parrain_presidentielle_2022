@@ -175,7 +175,7 @@ else:
     fig.update_layout(
         template=None,
         polar = dict(
-            radialaxis = dict(range=[0, df_candidat['Parrainage'].max()+12],
+            radialaxis = dict(range=[0, 100],
                             showticklabels=False,
                             ticks='',
                             gridwidth=0,
