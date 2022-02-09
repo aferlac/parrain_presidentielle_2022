@@ -9,51 +9,60 @@ import plotly.graph_objects as go
 import streamlit as st
 from streamlit_folium import folium_static
 
+st.set_page_config(page_title=' Parrainages - Présidentielle 2022 ', page_icon=None, layout='centered', initial_sidebar_state='auto')
+st.title('Parrainages - Présidentielle 2022')
+
 # Récupération des données du conseil constitutionnel
-data_parrainage2022_url = (
-    "https://presidentielle2022.conseil-constitutionnel.fr/telechargement/parrainagestotal.csv")
-df = pd.read_csv(data_parrainage2022_url, sep=';')
+@st.cache
+def extract(lien):
+    return(pd.read_csv(lien, sep=';'))
+df = extract("https://presidentielle2022.conseil-constitutionnel.fr/telechargement/parrainagestotal.csv")
 
 # Construction du df_parrain = nombre de parrainage par candidat
-candidat = []
-parrainage = []
-for i in df['Candidat'].unique():
-    candidat.append(i)
-    parrainage.append(df['Candidat'][df['Candidat']==i].count())
-df_parrain = pd.DataFrame({
-    'candidat' : candidat,
-    'nombre parrainage' : parrainage,
-})
-df_parrain['limite']=500
-df_parrain=df_parrain.sort_values(by='nombre parrainage',ascending=False)
+@st.cache
+def total_parrain(df):
+    candidat, parrainage = [], []
+    parrainage = []
+    for i in df['Candidat'].unique():
+        candidat.append(i)
+        parrainage.append(df['Candidat'][df['Candidat']==i].count())
+    df_parrain = pd.DataFrame({
+        'candidat' : candidat,
+        'nombre parrainage' : parrainage,
+    })
+    df_parrain['limite']=500
+    df_parrain=df_parrain.sort_values(by='nombre parrainage',ascending=False)
+    return(df_parrain)
+df_parrain = total_parrain(df)
 
 # Construction du df_occurence = nombre de parrainage par candidat, département et date de publication
-candidat, departement, nombre, date = [], [], [], []
-for c in df['Candidat'].unique():
-    for d in df['Département'][(df['Candidat']==c)].unique():
-        n=0
-        for j in df['Date de publication'].unique():   
-            n+=len(df[(df['Candidat']==c) & (df['Département']==d) & (df['Date de publication']==j)])
-            candidat.append(c)
-            departement.append(d)
-            nombre.append(n)
-            date.append(j)
-df_occurence = pd.DataFrame({
+@st.cache
+def occurence(df):
+    candidat, departement, nombre, date = [], [], [], []
+    for c in df['Candidat'].unique():
+        for d in df['Département'][(df['Candidat']==c)].unique():
+            n=0
+            for j in df['Date de publication'].unique():   
+                n+=len(df[(df['Candidat']==c) & (df['Département']==d) & (df['Date de publication']==j)])
+                candidat.append(c)
+                departement.append(d)
+                nombre.append(n)
+                date.append(j)
+    df_occurence = pd.DataFrame({
     'Candidats':candidat,
     'Département':departement,
     'Date':date,    
     'Parrainage':nombre,
-})
-df_occurence['Limite']=500
+    })
+    df_occurence['Limite']=500
+    return(df_occurence)
+df_occurence = occurence(df)
 
 liste_candidats = df['Candidat'].unique()
 liste_candidats.sort()
 
 liste_depart= df_occurence['Département'].unique()
 liste_depart.sort()
-
-st.set_page_config(page_title=' Parrainages - Présidentielle 2022 ', page_icon=None, layout='centered', initial_sidebar_state='auto')
-st.title('Parrainages - Présidentielle 2022')
 
 Choix_graphe = st.radio(label='Choisissez un graphe',
                         options=['Nombre de parrainages validés',
@@ -142,11 +151,15 @@ elif Choix_graphe=='Par département':
 else:
     # Graphe des parrainages par candidat
     candidat= st.selectbox(label='Sélectionnez un candidat (menu déroulant ou saisir le nom)',options=liste_candidats)
-    df_candidat=df_occurence[(df_occurence['Candidats']==candidat) & (df_occurence['Date']==df_occurence['Date'].max())].sort_values(by='Département',ascending=True)
-    df_candidat.drop(columns='Limite',inplace=True)
-    df_candidat = df_candidat.set_index(np.arange(len(df_candidat))) 
-    df_candidat['angle']=360/len(df_candidat)*df_candidat.index
-    df_candidat['base']=10
+    @st.cache
+    def create_df_candidat(personne):
+        df=df_occurence[(df_occurence['Candidats']==personne) & (df_occurence['Date']==df_occurence['Date'].max())].sort_values(by='Parrainage',ascending=False)
+        df.drop(columns='Limite',inplace=True)
+        df = df.set_index(np.arange(len(df))) 
+        df['angle']=360/len(df)*df.index
+        df['base']=40
+        return(df)
+    df_candidat=create_df_candidat(candidat)
     fig=px.bar_polar(data_frame=df_candidat,
                 r=df_candidat['Parrainage'],
                 theta=df_candidat['angle'],
