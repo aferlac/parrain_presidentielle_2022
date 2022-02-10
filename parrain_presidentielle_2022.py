@@ -16,7 +16,8 @@ st.title('Parrainages - Présidentielle 2022')
 @st.cache
 def extract(lien):
     return(pd.read_csv(lien, sep=';'))
-df = extract("https://presidentielle2022.conseil-constitutionnel.fr/telechargement/parrainagestotal.csv")
+lien = "https://presidentielle2022.conseil-constitutionnel.fr/telechargement/parrainagestotal.csv"
+df = extract(lien)
 
 # Construction du df_parrain = nombre de parrainage par candidat
 @st.cache
@@ -108,7 +109,11 @@ elif Choix_graphe=='Origine géographique des parrainages':
     folium.LayerControl().add_to(map)
 
     # Affichage du parrain et du nombre de parrainage
-    st.write(str(df_parrain[df_parrain['candidat']==Choix_candidat]['nombre parrainage'].tolist()[0])+' parrainages')
+    nb_parrain=df_parrain[df_parrain['candidat']==Choix_candidat]['nombre parrainage'].tolist()[0]
+    if nb_parrain==1:
+        st.write(str(nb_parrain)+' parrainage')
+    else:
+        st.write(str(nb_parrain)+' parrainages')
 
     # Affichage de la carte dans Streamlit
     folium_static(map)
