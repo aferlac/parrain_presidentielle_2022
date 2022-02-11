@@ -13,10 +13,10 @@ st.set_page_config(page_title=' Parrainages - Présidentielle 2022 ', page_icon=
 st.title('Parrainages - Présidentielle 2022')
 
 # Récupération des données du conseil constitutionnel
+lien = "https://presidentielle2022.conseil-constitutionnel.fr/telechargement/parrainagestotal.csv"
 @st.cache
 def extract(lien):
     return(pd.read_csv(lien, sep=';'))
-lien = "https://presidentielle2022.conseil-constitutionnel.fr/telechargement/parrainagestotal.csv"
 df = extract(lien)
 
 # Construction du df_parrain = nombre de parrainage par candidat
