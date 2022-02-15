@@ -180,7 +180,7 @@ else:
     fig.update_layout(
         template=None,
         polar = dict(
-            radialaxis = dict(range=[0, 100],
+            radialaxis = dict(range=[0,130],
                             showticklabels=False,
                             ticks='',
                             gridwidth=0,
