@@ -177,10 +177,14 @@ else:
                 width=800,
                 height=600,
                 )
+    if df_candidat['Parrainage'].max() > 50:
+        scale_max = df_candidat['Parrainage'].max() + 40 + 10
+    else:
+        scale_max = 90
     fig.update_layout(
         template=None,
         polar = dict(
-            radialaxis = dict(range=[0,130],
+            radialaxis = dict(range=[0,scale_max],
                             showticklabels=False,
                             ticks='',
                             gridwidth=0,
@@ -193,7 +197,28 @@ else:
                             ),
         ),
     )
-    st.write(str(df_parrain[df_parrain['candidat']==candidat]['nombre parrainage'].tolist()[0])+' parrainages')
+    nb_parrainage = df_candidat['Parrainage'].sum()
+    if nb_parrainage == 1:
+        st.write(candidat+' a obtenu '+str(nb_parrainage)+' parrainage.')
+    else:
+        st.write(candidat+' a obtenu '+str(nb_parrainage)+' parrainages.')
+    if df_candidat['Parrainage'].sum() > 500:
+        st.write('- Critère 1 atteint !')
+    else:
+        st.write('- Critère 1 pas atteint.')
+
+    A = len(df_candidat) - df_candidat['Département'].isin(["Français de l'étranger", "Parlement européen"]).sum()
+    st.write('\nLes parrainages de '+candidat+' représentent '+str(A)+" départements ou collectivités d'outre-mer et ")
+    B = df_candidat['Parrainage'].max()/df_candidat['Parrainage'].sum()*100
+    st.write(str(np.round(B,1))+" % des parrainages proviennent d'élus du département ou de la collectivité d'outre-mer le plus représenté.")
+    if (A >= 30) & (B < 10.0) :
+        st.write('- Critère 2 atteint !')
+    else:
+        st.write('- Critère 2 pas atteint.')
+    if (df_candidat['Parrainage'].sum() > 500) & (A >= 30) & (B < 10.0):
+        st.subheader('\nLe conseil constitutionnel devrait entérinner la candidature de '+candidat+' !')
+    else:
+        st.subheader('\nLe conseil constitutionnel ne peut pas entérinner la candidature de '+candidat+' !')
     st.write(fig)
 
 st.write('---')
