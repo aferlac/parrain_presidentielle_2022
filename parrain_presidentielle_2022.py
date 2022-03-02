@@ -57,7 +57,7 @@ def occurence(df):
     })
     df_occurence['Limite']=500
     return(df_occurence)
-df_occurence = occurence(df)
+df_occurence = pd.read_csv('./occurence_parrainage_présidentielle.csv')
 
 liste_candidats = df['Candidat'].unique()
 liste_candidats.sort()
