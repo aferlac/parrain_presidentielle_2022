@@ -37,26 +37,6 @@ def total_parrain(df):
 df_parrain = total_parrain(df)
 
 # Construction du df_occurence = nombre de parrainage par candidat, département et date de publication
-@st.cache
-def occurence(df):
-    candidat, departement, nombre, date = [], [], [], []
-    for c in df['Candidat'].unique():
-        for d in df['Département'][(df['Candidat']==c)].unique():
-            n=0
-            for j in df['Date de publication'].unique():   
-                n+=len(df[(df['Candidat']==c) & (df['Département']==d) & (df['Date de publication']==j)])
-                candidat.append(c)
-                departement.append(d)
-                nombre.append(n)
-                date.append(j)
-    df_occurence = pd.DataFrame({
-    'Candidats':candidat,
-    'Département':departement,
-    'Date':date,    
-    'Parrainage':nombre,
-    })
-    df_occurence['Limite']=500
-    return(df_occurence)
 df_occurence = pd.read_csv('./occurence_parrainage_présidentielle.csv')
 
 liste_candidats = df['Candidat'].unique()
