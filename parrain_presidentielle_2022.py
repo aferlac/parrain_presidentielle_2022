@@ -118,7 +118,7 @@ elif Choix_graphe=='Evolution des parrainages':
 elif Choix_graphe=='Par département':
     # Graphe des parrainages par département
     depart=st.selectbox(label='Sélectionnez un département (menu déroulant ou saisir le nom)',options=df_occurence['Département'].unique())
-    df_departement=df_occurence[(df_occurence['Département']==depart) & (df_occurence['Date']=='03/03/2022')].sort_values(by='Parrainage',ascending=False)
+    df_departement=df_occurence[(df_occurence['Département']==depart) & (df_occurence['Date']=='07/03/2022')].sort_values(by='Parrainage',ascending=False)
     fig = px.bar(df_departement, 
                  x='Candidats', 
                  y='Parrainage',
@@ -138,7 +138,7 @@ else:
     candidat= st.selectbox(label='Sélectionnez un candidat (menu déroulant ou saisir le nom)',options=liste_candidats)
     @st.cache
     def create_df_candidat(personne):
-        df=df_occurence[(df_occurence['Candidats']==personne) & (df_occurence['Date']=='03/03/2022')].sort_values(by='Parrainage',ascending=False)
+        df=df_occurence[(df_occurence['Candidats']==personne) & (df_occurence['Date']=='07/03/2022')].sort_values(by='Parrainage',ascending=False)
         df.drop(columns='Limite',inplace=True)
         df = df.set_index(np.arange(len(df))) 
         df['angle']=360/len(df)*df.index
